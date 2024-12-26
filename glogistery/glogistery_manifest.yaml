@@ -1,0 +1,49 @@
+Plugins: 
+  TestPluginNoSubCommands:
+    PluginName: "TestPluginNoSubCommands"
+    PluginUUID: 0
+    Address: "localhost:50051"
+    PluginCommands:
+      - CommandName: "TestCommand"
+        FunctionInputDefs:
+          - Name: "TestInput"
+            Type: "STRIN"
+            Default: "Test"
+            InputHelp: "Testing input 1"
+          - Name: "TestInput2"
+            Type: "INT"
+            Default: "6"
+            InputHelp: "Testing input 2"
+        CommandHelp: "Command for testing"
+    BinaryLoc: ""
+    GitSha: ""
+  TestPluginSubCommands:
+    PluginName: "TestPluginSubCommands"
+    PluginUUID: 0
+    Address: "localhost:50052"
+    PluginCommands:
+      - CommandName: "TestCommandSubCommands"
+        FunctionInputDefs:
+          - Name: "TestInput"
+            Type: "STRING"
+            Default: "Test"
+            InputHelp: "Testing input 1"
+          - Name: "TestInput2"
+            Type: "INT"
+            Default: "6"
+            InputHelp: "Testing input 2"
+        SubCommands:
+          - CommandName: "SubCommand"
+            FunctionInputDefs:
+              - Name: "TestInput"
+                Type: "STRING"
+                Default: "Test"
+                InputHelp: "Testing input 1"
+              - Name: "TestInput2"
+                Type: "INT"
+                Default: "6"
+                InputHelp: "Testing input 2"
+            CommandHelp: "SubCommand"
+        CommandHelp: "Command for testing"
+    BinaryLoc: ""
+    GitSha: ""
