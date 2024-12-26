@@ -9,6 +9,7 @@ import (
 	pb "glogistery/glotos"
 	"log"
 	"os"
+  "time"
 
 	"buf.build/go/protoyaml"
 	"github.com/fsnotify/fsnotify"
@@ -16,13 +17,15 @@ import (
 )
 
 var Manifest pb.Manifest
-var manifestReadCount int = 0
 
 func LoadManifest() {
   // Potential race condition with the file system and renames, can't solve it properly because there
   // are multiple Rename emits from the fs on bsd but fsnotify doesn't make the RenamedFrom publically
-  // available. Wait compensates as the fs write should not be more than a second
+  // available. Sleep compensates for the problem by waiting five seconds which should be maximum required.
+  // Dog shit compensation but there's no way to compensate without building my own packag.
+  // Dog shit compensation but there's no way to compensate without building my own packagee
 	filePath := fmt.Sprintf("%s%s", viper.GetString("ManifestFilePath"), viper.GetString("ManifestFileName"))
+  time.Sleep(5)
   if _, err := os.Stat(filePath); err == nil {
     yamlBytes, _ := os.ReadFile(filePath)
 
@@ -32,16 +35,11 @@ func LoadManifest() {
     if err = options.Unmarshal(yamlBytes, &Manifest); err != nil {
       log.Fatal(err)
     }
-    manifestReadCount = 0
   } else if errors.Is(err, os.ErrNotExist) {
     // Log out the error and keep a global count, if it happens twice
     // assume the second indicates that a fatal read as there are always
     // guaranteed to be two Renames on bsd systems
-    manifestReadCount += 1
-    log.Println(fmt.Sprintf("Config file does not exist, %s. Have attempted to read %d times.", filePath, manifestReadCount))
-    if manifestReadCount == 2 {
-      log.Fatal("Attempted and failed two reads, assuming file does not exist and not a file system write known issue.")
-    }
+    log.Fatal(fmt.Sprintf("Config file does not exist, %s.", filePath))
   } else {
     // Schrodingers file
     log.Fatal(fmt.Sprintf("Unknown err, %e", err))
