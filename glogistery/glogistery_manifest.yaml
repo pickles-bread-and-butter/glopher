@@ -7,7 +7,7 @@ Plugins:
       - CommandName: "TestCommand"
         FunctionInputDefs:
           - Name: "TestInput"
-            Type: "STRIN"
+            Type: "STRING"
             Default: "Test"
             InputHelp: "Testing input 1"
           - Name: "TestInput2"
