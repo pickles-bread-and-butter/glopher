@@ -67,7 +67,7 @@ def form_generic_commands(command_definitions: RepeatedCompositeFieldContainer[P
             sub_commands = form_generic_commands(command_definitions=command_definition.SubCommands, plugin_address=plugin_address, plugin_name=plugin_name)
             for sub_command in sub_commands:
                 generic_command.add_command(sub_command)
-
+        
         generic_commands.append(generic_command)
 
     return generic_commands

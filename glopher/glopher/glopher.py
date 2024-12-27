@@ -29,7 +29,7 @@ def init(ctx: click.Context) -> None:
 @glopher.command(help="Install plugin from registry")
 @plugin_name_option
 @click.pass_context
-def install_plugin(ctx: click.Context, plugin_name: str) -> None:
+def install(ctx: click.Context, plugin_name: str) -> None:
     config_obj = ctx.obj["config"]
     manifest = ctx.obj["manifest"]
     install_plugin_cmd(
@@ -42,7 +42,7 @@ def install_plugin(ctx: click.Context, plugin_name: str) -> None:
 @glopher.command(help="Uninstall plugin from local")
 @plugin_name_option
 @click.pass_context
-def uninstall_plugin(ctx: click.Context, plugin_name: str) -> None:
+def uninstall(ctx: click.Context, plugin_name: str) -> None:
     config_obj = ctx.obj["config"]
     manifest = ctx.obj["manifest"]
     uninstall_plugin_cmd(
@@ -54,7 +54,7 @@ def uninstall_plugin(ctx: click.Context, plugin_name: str) -> None:
 
 @glopher.command(help="List available plugins in registry")
 @click.pass_context
-def list_plugins(ctx: click.Context) -> None:
+def list(ctx: click.Context) -> None:
     config_obj = ctx.obj["config"]
     list_plugins_cmd(config_obj.registry_address)
 

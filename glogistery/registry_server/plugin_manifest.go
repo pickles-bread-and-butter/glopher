@@ -4,8 +4,11 @@
 package registry_server
 
 import (
+  "os/user"
 	"fmt"
   "errors"
+  "strings"
+  "path/filepath"
 	pb "glogistery/glotos"
 	"log"
 	"os"
@@ -18,13 +21,26 @@ import (
 
 var Manifest pb.Manifest
 
+func getUserPath(path string) string {
+  var ret_path string
+  if strings.HasPrefix("~/", path) {
+    usr, _ := user.Current()
+    dir := usr.HomeDir
+    ret_path = filepath.Join(dir, path[2:])
+  } else {
+    log.Println("No relative path defined, returning original path.")
+    ret_path = path
+  }
+  return ret_path
+}
+
 func LoadManifest() {
   // Potential race condition with the file system and renames, can't solve it properly because there
   // are multiple Rename emits from the fs on bsd but fsnotify doesn't make the RenamedFrom publically
   // available. Sleep compensates for the problem by waiting five seconds which should be maximum required.
-  // Dog shit compensation but there's no way to compensate without building my own packag.
-  // Dog shit compensation but there's no way to compensate without building my own packagee
-	filePath := fmt.Sprintf("%s%s", viper.GetString("ManifestFilePath"), viper.GetString("ManifestFileName"))
+  // Dog shit compensation but there's no way to compensate without building my own package
+  dir_path := getUserPath(viper.GetString("ManifestFilePath"))
+	filePath := filepath.Join(dir_path, viper.GetString("ManifestFileName"))
   time.Sleep(5)
   if _, err := os.Stat(filePath); err == nil {
     yamlBytes, _ := os.ReadFile(filePath)
@@ -60,8 +76,8 @@ func WatchManifest() {
 		panic(err)
 	}
 
-	dirPath := viper.GetString("ManifestFilePath")
-	manifestPath := fmt.Sprintf("%s%s", viper.GetString("ManifestFilePath"), viper.GetString("ManifestFileName"))
+	dirPath := getUserPath(viper.GetString("ManifestFilePath"))
+	manifestPath := filepath.Join(dirPath, viper.GetString("ManifestFileName"))
 	err = watcher.Add(dirPath)
 	if err != nil {
 		panic(err)
