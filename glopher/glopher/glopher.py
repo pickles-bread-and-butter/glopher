@@ -3,7 +3,7 @@ import os
 import click
 import pkg_resources
 
-from glopher.registry.commands import install_plugin_cmd, uninstall_plugin_cmd, list_plugins_cmd
+from glopher.registry.commands import init_cmd, install_plugin_cmd, uninstall_plugin_cmd, list_plugins_cmd
 from glopher.config.config import load_config
 from glopher.general.options import config_option, plugin_name_option, CONFIG_ENV_NAME, CONFIG_STANDARDIZED_LOCATION
 from glopher.host_module.manifest import unmarshall_manifest_from_yaml
@@ -20,6 +20,11 @@ def glopher(ctx: click.Context, config: str) -> None:
     manifest_obj = unmarshall_manifest_from_yaml(config_obj.manifest_file_location)
     ctx.obj = {"config": config_obj, "manifest": manifest_obj}
 
+
+@glopher.command(help="Init tool to link to custom naming")
+@click.pass_context
+def init(ctx: click.Context) -> None:
+    init_cmd(config=ctx.obj.get("config"))
 
 @glopher.command(help="Install plugin from registry")
 @plugin_name_option
@@ -58,4 +63,5 @@ def main():
     config_obj = load_config(os.environ.get(CONFIG_ENV_NAME, CONFIG_STANDARDIZED_LOCATION))
     manifest_obj = unmarshall_manifest_from_yaml(config_obj.manifest_file_location)
     form_plugins(glopher, manifest_obj)
-    glopher()
+    glopher.name = config_obj.cli_name
+    glopher()  # type: ignore
