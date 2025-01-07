@@ -71,18 +71,45 @@ func addOrUpdatePluginManifest(pluginDef *pb.PluginDefintion) (*ManifestUpdateCo
       }
     } else {
       manifestUpdateCode = ManifestUpdateCode(UpdateFailed)
-      return manifestUpdateCode, err
+      return &manifestUpdateCode, err
     }
   }
   
   err = updateManifestMapping(manifestMapping, pluginDef)
 
-  if err != {
+  if err != nil {
     log.Println("Error merging manifest mapping and plugin mapping")
     manifestUpdateCode = ManifestUpdateCode(UpdateFailed)
-    return manifestUpdateCode, err
+    return &manifestUpdateCode, err
   }
+  // file needs to be updated and the manifest object
+  // updating the manfiest object is done automatically
+  // after updating the file
+  err = updateManifestFile(manifestMapping)
+
   return &manifestUpdateCode, err
+}
+
+func updateManifestFile(manifestMapping *map[string]interface{}) error {
+  if manifestMapping == nil {
+    log.Println("Null mapping can't be saved to file.")
+    return errors.New("Null mapping can't be saved to file.")
+  }
+
+  yamlManifestBytes, err := yaml.Marshal(*manifestMapping)
+  if err != nil {
+    log.Println("Error marshalling yaml to bytes")
+    return err
+  }
+
+  manifestDirPath := getUserPath(viper.GetString("ManifestFilePath"))
+	manifestFilePath := filepath.Join(manifestDirPath, viper.GetString("ManifestFileName"))
+  err = os.WriteFile(manifestFilePath, yamlManifestBytes, 0644)
+  if err != nil {
+    log.Println("Failed to write to manifest file path, %s", manifestFilePath)
+    return err
+  }
+  return nil
 }
 
 func updateManifestMapping(manifestMapping *map[string]interface{}, pluginDef *pb.PluginDefintion) error {
@@ -96,9 +123,14 @@ func updateManifestMapping(manifestMapping *map[string]interface{}, pluginDef *p
   )
   var pluginDefMapping map[string]interface{}
   // have to make second variable to nest inside at plugins key
-  pluginsDefMapping := map[string]interface{}{}
+  pluginsDefMapping := map[string]interface{}{
+    "Plugins": map[string]interface{}{},
+  }
   err := yaml.Unmarshal(pluginDefYamlBytes, &pluginDefMapping)
-  pluginsDefMapping["Plugins"] = pluginDefMapping
+  pluginSpecificMap := map[string]interface{}{
+    pluginDef.PluginName: pluginDefMapping,
+  }
+  pluginsDefMapping["Plugins"] = pluginSpecificMap
 
   maps.Copy(*manifestMapping, pluginsDefMapping)
   return err

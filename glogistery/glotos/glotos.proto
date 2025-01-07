@@ -81,10 +81,22 @@ message PluginUnaryResponse {
   bytes ServerResponseFile = 1;
 }
 
+message PluginRemoveRequest {
+  string PluginName = 1;
+}
+
+message PluginRemoveResponse {
+  string ResponseString = 1;
+
+  int32 PluginUUID = 2;
+}
+
 service Registry {
   rpc GetPlugin (PluginGetRequest) returns (PluginGetResponse);
 
   rpc RegisterPlugin (PluginRegisterRequest) returns (PluginRegisterResponse);
+
+  rpc RemovePlugin (PluginRemoveRequest) returns (PluginRemoveResponse);
   
   rpc ListPlugins (google.protobuf.Empty) returns (PluginListResponse);
 }

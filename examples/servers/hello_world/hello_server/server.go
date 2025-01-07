@@ -57,9 +57,8 @@ func ServerStartRoutine() {
   }
   
   context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-  resp, err := regCli.RegisterPlugin(context, req)
+  _, err = regCli.RegisterPlugin(context, req)
   defer cancel()
-  log.Fatal(resp)
 }
 
 func StartHelloServer() {
