@@ -9,7 +9,6 @@ import (
 )
 
 func (registryServer *RegistryGRPCServer) ListPlugins(CallContext context.Context, EmptyPB *emptypb.Empty) (*pb.PluginListResponse, error) {
-	GetPluginNames()
 	ListReponse := FormPluginListResponse()
 	return &ListReponse, nil
 }
@@ -21,4 +20,13 @@ func (registryServer *RegistryGRPCServer) GetPlugin(CallContext context.Context,
 		log.Println(err)
 	}
 	return GetPluginResponse, err
+}
+
+func (registryServer *RegistryGRPCServer) RegisterPlugin(CallContext context.Context, PluginRegisterRequest *pb.PluginRegisterRequest) (*pb.PluginRegisterResponse, error) {
+  RegisterPluginResponse, err := FormRegisterPluginResponse(PluginRegisterRequest)
+  if err != nil {
+    log.Println(fmt.Sprintf("Registering plugin %s caused error", PluginRegisterRequest.PluginServiceDefinition.PluginName))
+    log.Println(err)
+  }
+  return RegisterPluginResponse, err
 }

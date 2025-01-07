@@ -22,3 +22,9 @@ func FormGetPluginResponse(PluginName string) (*pb.PluginGetResponse, error) {
 		return nil, errors.New(fmt.Sprintf("No plugin %s, contact ListPlugins to see available.", PluginName))
 	}
 }
+
+func FormRegisterPluginResponse(PluginRegisterRequest *pb.PluginRegisterRequest) (*pb.PluginRegisterResponse, error) {
+  ManifestUpdateCode, err := addOrUpdatePluginManifest(PluginRegisterRequest.PluginServiceDefinition)
+  fmt.Println(ManifestUpdateCode)
+  return nil, err
+}

@@ -63,16 +63,14 @@ message PluginListResponse {
 
 message PluginRegisterRequest {
   PluginDefintion PluginServiceDefinition = 1;
-  
-  string PluginName = 2;
-
-  int64 uuid = 3;
 }
 
 message PluginRegisterResponse {
   int32 ReponseCode = 1;
 
-  string ReponseString = 2;
+  int32 PluginAssignedUUID = 2;
+
+  string ReponseString = 3;
 }
 
 message PluginUnaryRequest {

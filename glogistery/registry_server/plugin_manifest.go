@@ -6,6 +6,7 @@ package registry_server
 import (
   "os/user"
 	"fmt"
+  "maps"
   "errors"
   "strings"
   "path/filepath"
@@ -17,9 +18,125 @@ import (
 	"buf.build/go/protoyaml"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+  "gopkg.in/yaml.v2"
 )
 
-var Manifest pb.Manifest
+var (
+  Manifest pb.Manifest
+)
+
+type ManifestUpdateCode int
+
+const (
+  PluginAdded ManifestUpdateCode = iota
+  PluginUpdated
+  PluginDeleted
+  UpdateFailed
+)
+
+var updateNaming = map[ManifestUpdateCode]string{
+  PluginAdded: "added plugin",
+  PluginUpdated: "updated plugin",
+  PluginDeleted: "deleted plugin",
+  UpdateFailed: "failed update",
+}
+
+func (updateCode ManifestUpdateCode) String() string {
+  return updateNaming[updateCode]
+}
+
+func addOrUpdatePluginManifest(pluginDef *pb.PluginDefintion) (*ManifestUpdateCode, error) {
+  // check current manifest object for the plugin name (if so update)
+  pluginName := pluginDef.PluginName
+  _, ok := Manifest.Plugins[pluginName]
+  manifestUpdateCode := ManifestUpdateCode(UpdateFailed)
+  if ok {
+    log.Println("Plugin exists, operation will update plugin.")
+    manifestUpdateCode = ManifestUpdateCode(PluginUpdated)
+  } else {
+    log.Println("Plugin doesn't exist, adding fresh plugin.")
+    manifestUpdateCode = ManifestUpdateCode(PluginAdded)
+  }
+
+  manifestDirPath := getUserPath(viper.GetString("ManifestFilePath"))
+	manifestFilePath := filepath.Join(manifestDirPath, viper.GetString("ManifestFileName"))
+  manifestMapping, err := readYamlFile(&manifestFilePath)
+
+  if err != nil {
+    log.Println(fmt.Sprintf("Failed to parse manifest file w/t err, %e", err))
+    if strings.Contains(err.Error(), "File is empty can't unmarshal.") {
+      log.Println("Empty manifest file, creating new manifest")
+      manifestMapping = &map[string]interface{}{
+        "Plugins": map[string]interface{}{},
+      }
+    } else {
+      manifestUpdateCode = ManifestUpdateCode(UpdateFailed)
+      return manifestUpdateCode, err
+    }
+  }
+  
+  err = updateManifestMapping(manifestMapping, pluginDef)
+
+  if err != {
+    log.Println("Error merging manifest mapping and plugin mapping")
+    manifestUpdateCode = ManifestUpdateCode(UpdateFailed)
+    return manifestUpdateCode, err
+  }
+  return &manifestUpdateCode, err
+}
+
+func updateManifestMapping(manifestMapping *map[string]interface{}, pluginDef *pb.PluginDefintion) error {
+  if manifestMapping == nil {
+    log.Println("Null pointer for manifest mapping, internal error!")
+    return errors.New("Internal error.")
+  }
+
+  pluginDefYamlBytes, _ := protoyaml.Marshal(
+    pluginDef,
+  )
+  var pluginDefMapping map[string]interface{}
+  // have to make second variable to nest inside at plugins key
+  pluginsDefMapping := map[string]interface{}{}
+  err := yaml.Unmarshal(pluginDefYamlBytes, &pluginDefMapping)
+  pluginsDefMapping["Plugins"] = pluginDefMapping
+
+  maps.Copy(*manifestMapping, pluginsDefMapping)
+  return err
+}
+
+func readYamlFile(filePath *string) (*map[string]interface{}, error){
+    fileInfo, err := os.Stat(*filePath)
+    if err != nil {
+      if os.IsNotExist(err) {
+        log.Println("%s does not exist", filePath)
+      } else {
+        log.Println("Error on stat file %e", err)
+      }
+      return nil, err
+    }
+
+    if fileInfo.Size() == 0 {
+      log.Println("File is empty, cannot unmarshal to yaml.")
+      return nil, errors.New("File is empty can't unmarshal.")
+    }
+
+    yamlBuffer, err := os.Open(*filePath)
+    if err != nil {
+      log.Println("Err opening file")
+      return nil, err
+    }
+    defer yamlBuffer.Close()
+
+    m := make(map[string]interface{})
+    decoder := yaml.NewDecoder(yamlBuffer)
+    err = decoder.Decode(&m)
+
+    if err != nil {
+      log.Println("Couldn't unmarshal file on sytax")
+      return nil, err
+    }
+    return &m, err
+}
 
 func getUserPath(path string) string {
   var ret_path string
@@ -52,9 +169,8 @@ func LoadManifest() {
       log.Fatal(err)
     }
   } else if errors.Is(err, os.ErrNotExist) {
-    // Log out the error and keep a global count, if it happens twice
-    // assume the second indicates that a fatal read as there are always
-    // guaranteed to be two Renames on bsd systems
+    // Log out the error, wait has already compensated for race condition
+    // so this should not happen.
     log.Fatal(fmt.Sprintf("Config file does not exist, %s.", filePath))
   } else {
     // Schrodingers file
@@ -68,6 +184,10 @@ func GetPluginNames() []string {
 		PluginNames = append(PluginNames, PluginName)
 	}
 	return PluginNames
+}
+
+func RegisterPlugin() {
+
 }
 
 func WatchManifest() {
