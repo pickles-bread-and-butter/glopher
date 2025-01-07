@@ -66,11 +66,11 @@ message PluginRegisterRequest {
 }
 
 message PluginRegisterResponse {
-  int32 ReponseCode = 1;
+  int64 ReponseCode = 1;
 
-  int32 PluginAssignedUUID = 2;
+  int64 PluginAssignedUUID = 2;
 
-  string ReponseString = 3;
+  string ResponseString = 3;
 }
 
 message PluginUnaryRequest {
@@ -88,7 +88,7 @@ message PluginRemoveRequest {
 message PluginRemoveResponse {
   string ResponseString = 1;
 
-  int32 PluginUUID = 2;
+  optional int64 PluginUUID = 2;
 }
 
 service Registry {

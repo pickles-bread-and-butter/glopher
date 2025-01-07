@@ -58,6 +58,10 @@ func ServerStartRoutine() {
   
   context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
   _, err = regCli.RegisterPlugin(context, req)
+  removeReq := &pb.PluginRemoveRequest{
+    PluginName: "hello_world",
+  }
+  _, err = regCli.RemovePlugin(context, removeReq)
   defer cancel()
 }
 

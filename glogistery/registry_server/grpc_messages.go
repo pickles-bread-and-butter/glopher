@@ -24,7 +24,28 @@ func FormGetPluginResponse(PluginName string) (*pb.PluginGetResponse, error) {
 }
 
 func FormRegisterPluginResponse(PluginRegisterRequest *pb.PluginRegisterRequest) (*pb.PluginRegisterResponse, error) {
-  ManifestUpdateCode, err := addOrUpdatePluginManifest(PluginRegisterRequest.PluginServiceDefinition)
-  fmt.Println(ManifestUpdateCode)
-  return nil, err
+  ManifestUpdateCodeVal, err := addOrUpdatePluginManifest(PluginRegisterRequest.PluginServiceDefinition)
+  if err != nil {
+    return nil, err
+  }
+  RegisterPluginResponse := pb.PluginRegisterResponse{
+    ReponseCode: int64(*ManifestUpdateCodeVal),
+    PluginAssignedUUID: PluginRegisterRequest.PluginServiceDefinition.PluginUUID,
+    ResponseString: fmt.Sprint("%s", ManifestUpdateCodeVal),
+  }
+  return &RegisterPluginResponse, err
+}
+
+func FormPluginRemoveResponse(PluginRemoveRequest *pb.PluginRemoveRequest) (*pb.PluginRemoveResponse, error) {
+  PluginRemoveCode, err := removeManifestPlugin(&PluginRemoveRequest.PluginName)
+  var pntrPluginUUID *int64 = nil
+  if PluginRemoveCode != nil {
+    PluginUUID := int64(*PluginRemoveCode)
+    pntrPluginUUID = &PluginUUID
+  }
+  PluginRemoveResponse := pb.PluginRemoveResponse{
+    ResponseString: fmt.Sprintf("%s", PluginRemoveCode),
+    PluginUUID: pntrPluginUUID,
+  }
+  return &PluginRemoveResponse, err
 }

@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Registry_GetPlugin_FullMethodName      = "/Registry/GetPlugin"
 	Registry_RegisterPlugin_FullMethodName = "/Registry/RegisterPlugin"
+	Registry_RemovePlugin_FullMethodName   = "/Registry/RemovePlugin"
 	Registry_ListPlugins_FullMethodName    = "/Registry/ListPlugins"
 )
 
@@ -31,6 +32,7 @@ const (
 type RegistryClient interface {
 	GetPlugin(ctx context.Context, in *PluginGetRequest, opts ...grpc.CallOption) (*PluginGetResponse, error)
 	RegisterPlugin(ctx context.Context, in *PluginRegisterRequest, opts ...grpc.CallOption) (*PluginRegisterResponse, error)
+	RemovePlugin(ctx context.Context, in *PluginRemoveRequest, opts ...grpc.CallOption) (*PluginRemoveResponse, error)
 	ListPlugins(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*PluginListResponse, error)
 }
 
@@ -62,6 +64,16 @@ func (c *registryClient) RegisterPlugin(ctx context.Context, in *PluginRegisterR
 	return out, nil
 }
 
+func (c *registryClient) RemovePlugin(ctx context.Context, in *PluginRemoveRequest, opts ...grpc.CallOption) (*PluginRemoveResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PluginRemoveResponse)
+	err := c.cc.Invoke(ctx, Registry_RemovePlugin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *registryClient) ListPlugins(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*PluginListResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PluginListResponse)
@@ -78,6 +90,7 @@ func (c *registryClient) ListPlugins(ctx context.Context, in *empty.Empty, opts 
 type RegistryServer interface {
 	GetPlugin(context.Context, *PluginGetRequest) (*PluginGetResponse, error)
 	RegisterPlugin(context.Context, *PluginRegisterRequest) (*PluginRegisterResponse, error)
+	RemovePlugin(context.Context, *PluginRemoveRequest) (*PluginRemoveResponse, error)
 	ListPlugins(context.Context, *empty.Empty) (*PluginListResponse, error)
 	mustEmbedUnimplementedRegistryServer()
 }
@@ -94,6 +107,9 @@ func (UnimplementedRegistryServer) GetPlugin(context.Context, *PluginGetRequest)
 }
 func (UnimplementedRegistryServer) RegisterPlugin(context.Context, *PluginRegisterRequest) (*PluginRegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterPlugin not implemented")
+}
+func (UnimplementedRegistryServer) RemovePlugin(context.Context, *PluginRemoveRequest) (*PluginRemoveResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemovePlugin not implemented")
 }
 func (UnimplementedRegistryServer) ListPlugins(context.Context, *empty.Empty) (*PluginListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPlugins not implemented")
@@ -155,6 +171,24 @@ func _Registry_RegisterPlugin_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Registry_RemovePlugin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PluginRemoveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RegistryServer).RemovePlugin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Registry_RemovePlugin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RegistryServer).RemovePlugin(ctx, req.(*PluginRemoveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Registry_ListPlugins_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(empty.Empty)
 	if err := dec(in); err != nil {
@@ -187,6 +221,10 @@ var Registry_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterPlugin",
 			Handler:    _Registry_RegisterPlugin_Handler,
+		},
+		{
+			MethodName: "RemovePlugin",
+			Handler:    _Registry_RemovePlugin_Handler,
 		},
 		{
 			MethodName: "ListPlugins",

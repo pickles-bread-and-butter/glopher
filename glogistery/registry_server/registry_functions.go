@@ -30,3 +30,12 @@ func (registryServer *RegistryGRPCServer) RegisterPlugin(CallContext context.Con
   }
   return RegisterPluginResponse, err
 }
+
+func (registryServer *RegistryGRPCServer) RemovePlugin(CallContext context.Context, PluginDeleteRequest *pb.PluginRemoveRequest) (*pb.PluginRemoveResponse, error){
+  RemovePluginResponse, err := FormPluginRemoveResponse(PluginDeleteRequest)
+  if err != nil {
+    log.Println(fmt.Sprintf("Removing plugin %s caused error", PluginDeleteRequest.PluginName))
+    log.Println(err)
+  }
+  return RemovePluginResponse, err
+}

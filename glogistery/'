@@ -120,9 +120,9 @@ func removeManifestPlugin(pluginName *string) (*ManifestUpdateCode, error) {
 
   _, ok := Manifest.Plugins[*pluginName]
   if ok {
-    log.Println(fmt.Sprintf("Found plugin %s, removing.", *pluginName))
+    log.Println(fmt.Sprintf("Found plugin %s, removing.", pluginName))
   } else {
-    log.Printf("Plugin doesn't exist %s, can't remove", *pluginName)
+    log.Printf("Plugin doesn't exist %s, can't remove", pluginName)
     return &manifestUpdateCode, errors.New("Plugin doesn't exist in manifest.")
   }
 
@@ -136,30 +136,17 @@ func removeManifestPlugin(pluginName *string) (*ManifestUpdateCode, error) {
     return &manifestUpdateCode, err
   }
 
-  err = removePluginManifestMapping(*manifestMapping, pluginName)
+  err = removePluginManifestMapping(manifestMapping, pluginName)
   if err != nil {
     log.Println("Error removing plugin from yaml struct, %e", err)
     return &manifestUpdateCode, err
   }
-
-  err = updateManifestFile(manifestMapping)
   return &manifestUpdateCode, nil
 }
 
-func removePluginManifestMapping(manifestMapping map[string]interface{}, pluginName *string) error {
-  var err error = nil
-  if pluginsMapping, ok := manifestMapping["Plugins"].(map[interface{}]interface{}); ok {
-    if _, ok := pluginsMapping[*pluginName].(map[interface{}]interface{}); ok{
-      log.Printf("Found plugin %s of proper type, removing.", *pluginName)
-      delete(pluginsMapping, *pluginName)
-    } else {
-      log.Printf("Plugin %s not of right data type map[interface{}]interface{}, file map broken.", *pluginName)
-    }
-  } else {
-    log.Println("Manifest object not map[interface{}]interface{}, file map broken.")
-    err = errors.New("Manifest object not of type map[string]interface{}, file map broken")
-  }
-  return err
+func removePluginManifestMapping(manifestMapping *map[string]interface{}, pluginName *string) error {
+  pluginsMapping := manifestMapping["Plugins"]
+  return nil
 }
 
 func updateManifestMapping(manifestMapping *map[string]interface{}, pluginDef *pb.PluginDefintion) error {
