@@ -50,7 +50,7 @@ def form_generic_plugin(plugin_name: str, plugin_definition: PluginDefintion) ->
 def form_generic_commands(command_definitions: RepeatedCompositeFieldContainer[PluginCommand], plugin_address: str, plugin_name: str):
     generic_commands = []
     for command_definition in command_definitions:
-        if not isinstance(command_definition, PluginCommand):
+        if len(command_definition.SubCommands) > 0:
             command_header = click.group(name=command_definition.CommandName, help=command_definition.CommandHelp)
             function = lambda kwargs, plugin_address, plugin_name: group_function()
         else:
