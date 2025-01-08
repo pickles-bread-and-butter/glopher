@@ -4,7 +4,7 @@ WORKDIR /glogistery
 
 COPY go.mod go.sum ./
 
-RUN go mod install
+RUN go install
 
 COPY . .
 
