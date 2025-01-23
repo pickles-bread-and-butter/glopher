@@ -30,7 +30,7 @@ func SetupManifestWatcher() {
 }
 
 func StartRegistryServer() {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", viper.GetInt("AddressToServe")))
+  lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", viper.GetInt("AddressToServe")))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

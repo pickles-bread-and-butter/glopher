@@ -23,7 +23,7 @@ type ExpectedContract struct {
 func ServerStartRoutine() {
   // Create client for registry and register self
   creds := insecure.NewCredentials()
-  conn, err := grpc.NewClient("localhost:8000", grpc.WithTransportCredentials(creds))
+  conn, err := grpc.NewClient("0.0.0.0:8000", grpc.WithTransportCredentials(creds))
   if err != nil {
     log.Fatal(err)
   }
@@ -43,7 +43,7 @@ func ServerStartRoutine() {
       CommandHelp: &commandHelp,
     },
   }
-  var address string = "localhost:8008"
+  var address string = "0.0.0.0:8008"
   HelloWorldServiceDef := pb.PluginDefintion{
     PluginName: "hello_world",
     PluginUUID: 0,
@@ -57,16 +57,17 @@ func ServerStartRoutine() {
   }
   
   context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
   _, err = regCli.RegisterPlugin(context, req)
-  removeReq := &pb.PluginRemoveRequest{
-    PluginName: "hello_world",
-  }
-  _, err = regCli.RemovePlugin(context, removeReq)
+  //removeReq := &pb.PluginRemoveRequest{
+    //PluginName: "hello_world",
+  //}
+  //_, err = regCli.RemovePlugin(context, removeReq)
   defer cancel()
 }
 
 func StartHelloServer() {
-  lis, err := net.Listen("tcp", "localhost:8008")
+  lis, err := net.Listen("tcp", "0.0.0.0:8008")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

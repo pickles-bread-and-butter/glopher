@@ -9,5 +9,6 @@ import (
 func (helloWorldServer *HelloServer) UnaryCallPlugin(CallContext context.Context, HelloWordServerRequest *pb.PluginUnaryRequest) (*pb.PluginUnaryResponse, error) {
   log.Println("Hello")
   log.Println(HelloWordServerRequest)
+
   return nil, nil
 }

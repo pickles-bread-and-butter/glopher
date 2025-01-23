@@ -1,17 +1,18 @@
-FROM golang:1.21 as base
+FROM golang:1.23 as base
 
 WORKDIR /glogistery
 
-COPY go.mod go.sum ./
+COPY go.mod .
+COPY go.sum .
 
-RUN go install
+RUN go mod download
 
 COPY . .
+COPY ./glogistery_config.yaml /root/
+COPY ./glogistery_manifest.yaml /root/
 
-RUN go build . -o main
+RUN go build .
 
 FROM base as running
 
-EXPOSE 8000
-
-CMD ["./main"]
+CMD ["./glogistery"]
