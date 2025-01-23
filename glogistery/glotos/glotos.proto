@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package = "/Users/isaak.willett/code/glopher/glogistery/protos";
+
+enum InputType {
+  STRING = 0;
+  INT = 1;
+  FLOAT = 2;
+  BOOL = 3;
+}
+
+message FunctionInput {
+  string Name = 1;
+  
+  InputType Type = 2;
+  
+  string Default = 3;
+
+  string InputHelp = 4; 
+}
+
+message PluginCommand {
+  string CommandName = 1;
+
+  repeated FunctionInput FunctionInputDefs = 2;
+
+  repeated PluginCommand SubCommands = 3;
+
+  optional string CommandHelp = 4;
+}
+
+message PluginDefintion {
+  string PluginName = 1;
+
+  int64 PluginUUID = 2;
+
+  repeated PluginCommand PluginCommands = 3;
+  
+  optional string Address = 4;
+
+  optional string BinaryLoc = 5;
+  
+  string GitSha = 6;
+}
+
+message Manifest {
+  map<string, PluginDefintion> Plugins = 1;
+}
+
+message PluginGetRequest {
+  string PluginName = 1;
+}
+
+message PluginGetResponse {
+  PluginDefintion PluginDef = 1;
+}
+
+message PluginListResponse {
+  repeated string PluginNames = 1;
+}
+
+message PluginRegisterRequest {
+  PluginDefintion PluginServiceDefinition = 1;
+}
+
+message PluginRegisterResponse {
+  int64 ReponseCode = 1;
+
+  int64 PluginAssignedUUID = 2;
+
+  string ResponseString = 3;
+}
+
+message PluginUnaryRequest {
+  bytes ClientCommandFile = 1;
+}
+
+message PluginUnaryResponse {
+  bytes ServerResponseFile = 1;
+}
+
+message PluginRemoveRequest {
+  string PluginName = 1;
+}
+
+message PluginRemoveResponse {
+  string ResponseString = 1;
+
+  optional int64 PluginUUID = 2;
+}
+
+service Registry {
+  rpc GetPlugin (PluginGetRequest) returns (PluginGetResponse);
+
+  rpc RegisterPlugin (PluginRegisterRequest) returns (PluginRegisterResponse);
+
+  rpc RemovePlugin (PluginRemoveRequest) returns (PluginRemoveResponse);
+  
+  rpc ListPlugins (google.protobuf.Empty) returns (PluginListResponse);
+}
+
+service Plugin {
+  rpc UnaryCallPlugin (PluginUnaryRequest) returns (PluginUnaryResponse);
+}
+
