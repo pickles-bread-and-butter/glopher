@@ -86,3 +86,5 @@ def command_function(function_inputs: Dict[str, Any], plugin_address: str,  plug
 
     # Send request to the plugin service and have it handle the logic
     plugin_response = plugin_client.unary_plugin_call(yaml_buffer)
+
+    print(yaml.safe_load(plugin_response.ServerResponseFile))
